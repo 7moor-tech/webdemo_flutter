@@ -280,18 +280,22 @@ class _WebViewPageState extends State<WebViewPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('WebView'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.pop(context);
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            final canGoBack = await controller.canGoBack();
+            print('canGoBack:$canGoBack');
+            if (canGoBack) {
+              controller.goBack();
+            } else {
+              Navigator.pop(context);
+            }
           },
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              if (await controller.canGoBack()) {
-                controller.goBack();
-              }
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              Navigator.pop(context);
             },
           ),
           IconButton(
