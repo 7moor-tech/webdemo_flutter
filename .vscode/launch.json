@@ -1,0 +1,45 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "webdemo_flutter",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "webdemo_flutter (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "webdemo_flutter (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "flutter_file_picker",
+            "cwd": "plugin\\flutter_file_picker",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "flutter_file_picker (profile mode)",
+            "cwd": "plugin\\flutter_file_picker",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "flutter_file_picker (release mode)",
+            "cwd": "plugin\\flutter_file_picker",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

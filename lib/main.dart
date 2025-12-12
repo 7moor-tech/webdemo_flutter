@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart'
     as webview_flutter_android;
@@ -107,12 +108,27 @@ class _WebViewPageState extends State<WebViewPage> {
   @override
   void initState() {
     super.initState();
-    controller = WebViewController(
-      onPermissionRequest: (request) {
-        print('onPermissionRequest:$request');
-      },
-    );
+    controller = WebViewController();
     controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        onNavigationRequest: (request) {
+          print('onNavigationRequest:${request.url}');
+          try {
+            Uri uri = Uri.parse(request.url);
+            // 调用系统浏览器进行文件下载
+            if (uri.host.endsWith('7moor-fs2.com') ||
+                uri.host == 'webim-client-cdn.7moor.com') {
+              launchUrl(uri);
+              return NavigationDecision.prevent;
+            }
+          } catch (e) {
+            // Do nothing
+          }
+          return NavigationDecision.navigate;
+        },
+      ),
+    );
     if (Platform.isAndroid) {
       final androidController =
           (controller.platform
@@ -263,7 +279,21 @@ class _WebViewPageState extends State<WebViewPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('WebView'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              if (await controller.canGoBack()) {
+                controller.goBack();
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
