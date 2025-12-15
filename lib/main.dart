@@ -42,7 +42,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _urlController = TextEditingController(
     text:
-        'https://test3-webchat.7moor.com/wapchat.html?accessId=9f9db6e0-e1a9-11ee-ac79-4f450bc1a897&useJsUpload=true&videoDownloadBtn=true',
+        'https://test3-webchat.7moor.com/wapchat.html?accessId=4ba0f850-00b0-11f0-9010-1321e4829c76&useJsUpload=true&videoDownloadBtn=true',
   );
 
   @override
@@ -118,6 +118,7 @@ class _WebViewPageState extends State<WebViewPage> {
             Uri uri = Uri.parse(request.url);
             // 调用系统浏览器进行文件下载
             if (uri.host.endsWith('7moor-fs2.com') ||
+                request.url.contains('7moor.com/oss/') ||
                 uri.host == 'webim-client-cdn.7moor.com') {
               launchUrl(uri);
               return NavigationDecision.prevent;
