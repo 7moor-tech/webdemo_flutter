@@ -102,12 +102,18 @@ class WebViewPage extends StatefulWidget {
   State<WebViewPage> createState() => _WebViewPageState();
 }
 
-class _WebViewPageState extends State<WebViewPage> {
+class _WebViewPageState extends State<WebViewPage> with WidgetsBindingObserver {
   late WebViewController controller;
+  // 增加标记，判断是否发生了错误（用来区分是否需要刷新）
+  bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
+
+    // 注册生命周期监听
+    WidgetsBinding.instance.addObserver(this);
+
     controller = WebViewController();
     controller.setJavaScriptMode(JavaScriptMode.unrestricted);
     controller.setNavigationDelegate(
@@ -127,6 +133,16 @@ class _WebViewPageState extends State<WebViewPage> {
             // Do nothing
           }
           return NavigationDecision.navigate;
+        },
+        // 监听错误，如果是因为没权限导致的加载失败，这里会被触发
+        onWebResourceError: (WebResourceError error) {
+          print('onWebResourceError: ${error.description}');
+          // 标记发生了错误
+          _hasError = true;
+        },
+        // 监听加载成功，如果成功了就把错误标记清除
+        onPageFinished: (String url) {
+          _hasError = false;
         },
       ),
     );
@@ -151,6 +167,7 @@ class _WebViewPageState extends State<WebViewPage> {
             final url = data['url'];
             _onDownloadVideo(url);
           } else if (method == 'onCloseEvent') {
+            print('onCloseEvent');
             _onCloseEvent();
           }
         } catch (e) {}
@@ -185,6 +202,39 @@ class _WebViewPageState extends State<WebViewPage> {
       return result.files.map((file) => 'file://${file.path}').toList();
     }
     return [];
+  }
+
+  @override
+  void dispose() {
+    // 移除生命周期监听
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 如果当前处于错误状态
+      if (_hasError) {
+        // 第一次重试：延时 1 秒
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (!mounted) return;
+          print('执行第一次重试...');
+          // 使用 loadRequest 重新加载
+          controller.loadRequest(Uri.parse(widget.url));
+        });
+
+        // 延时 3 秒 (作为双重保险)
+        Future.delayed(const Duration(milliseconds: 3000), () {
+          if (!mounted) return;
+          // 检查如果还在错误状态，再试一次
+          if (_hasError) {
+            print('执行第二次重试...');
+            controller.loadRequest(Uri.parse(widget.url));
+          }
+        });
+      }
+    }
   }
 
   ///H5页面上传 图片/文件 权限检查
